@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ferrow: the field runbook that updates as jobs close</title>
+<meta name="description" content="Ferrow is a runbook for field service, support and logistics teams. Each closed job updates the page it used, so the next crew gets the latest fix and the job it came from.">
+<script>
+  // Pick the theme before first paint: a saved choice, else the system setting.
+  (function () {
+    var t = null;
+    try { t = localStorage.getItem("ferrow-theme"); } catch (e) {}
+    if (t !== "light" && t !== "dark") t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", t);
+  })();
+</script>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Cpath fill=%27%231daf9c%27 d=%27M0 0h16v10l-6 6H0z%27/%3E%3C/svg%3E">
+<link rel="preload" href="/fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/src/style.css">
+<style>
+/* The credit every Illos example carries. It takes the footer's own text colour, so it fits light and dark. */
+a.illos-credit.illos-credit { display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px 0 10px; border-radius: 999px; border: 1px solid color-mix(in srgb, currentColor 22%, transparent); color: inherit; font-size: 13px; font-weight: 400; line-height: 1; letter-spacing: normal; text-transform: none; text-decoration: none; white-space: nowrap; transition: border-color 150ms ease-out; }
+.illos-credit svg { width: 14px; height: 14px; flex: none; fill: currentColor; }
+@media (hover: hover) and (pointer: fine) { a.illos-credit.illos-credit:hover { border-color: color-mix(in srgb, currentColor 45%, transparent); } }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="top" id="top">
+  <div class="wrap bar">
+    <a class="brand" href="#main" aria-label="Ferrow home"><span class="brand-mark" aria-hidden="true"></span>Ferrow</a>
+    <nav class="links" id="menu" aria-label="Main">
+      <a href="#why">The problem</a>
+      <a href="#how">How pages update</a>
+      <a href="#answers">Sources</a>
+      <a href="#security">Access</a>
+      <a href="#uses">Teams</a>
+      <a class="btn links-cta" href="#start">Book a demo</a>
+    </nav>
+    <div class="actions">
+      <button class="icon-btn" id="theme" type="button" aria-label="Switch to dark theme">
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.5 14.08C20.3 14.72 18.93 15.08 17.48 15.08C12.75 15.08 8.92 11.25 8.92 6.52C8.92 5.07 9.28 3.7 9.92 2.5C5.67 3.5 2.5 7.32 2.5 11.87C2.5 17.19 6.81 21.5 12.13 21.5C16.68 21.5 20.5 18.33 21.5 14.08Z"/></svg>
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M17 12C17 14.76 14.76 17 12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12Z"/><path d="M12 2V3.5M12 20.5V22M19.07 19.07L18.01 18.01M5.99 5.99L4.93 4.93M22 12H20.5M3.5 12H2M19.07 4.93L18.01 5.99M5.99 18.01L4.93 19.07"/></svg>
+      </button>
+      <a class="btn btn-sm bar-cta" href="#start">Book a demo</a>
+      <button class="icon-btn menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="menu" aria-label="Open menu">
+        <svg class="open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 8L20 8"/><path d="M4 16L20 16"/></svg>
+        <svg class="close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M18 6L6 18M18 18L6 6"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- hero -->
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow"><span class="pulse" aria-hidden="true"></span>For crews and support agents</p>
+      <h1>Every closed job <span class="muted">updates the runbook.</span></h1>
+      <div class="hero-row">
+        <p class="lede">When a crew closes a job, Ferrow writes what they learned into the runbook page that job used. The next crew opens that page and gets the fix that worked yesterday, with a link to the job behind it.</p>
+        <div class="ctas">
+          <a class="btn" href="#start">Book a demo<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18.5 12L5 12"/><path d="M13 18C13 18 19 13.58 19 12C19 10.42 13 6 13 6"/></svg></a>
+          <a class="btn ghost" href="#how">Watch a page update</a>
+        </div>
+      </div>
+    </div>
+    <div class="wrap">
+      <div class="plate">
+        <div class="plate-art" data-illos><!-- illos:hero --></div>
+        <div class="flow">
+          <div class="flow-group">
+            <p class="label">Reads closed work from</p>
+            <ul class="pills">
+              <li>Work orders</li><li>Tickets</li><li>Delivery logs</li>
+            </ul>
+          </div>
+          <span class="flow-arrow" aria-hidden="true"></span>
+          <div class="flow-group">
+            <p class="label">Updates</p>
+            <ul class="pills"><li class="is-live">Runbook pages</li></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 01 why -->
+  <section class="chapter" id="why">
+    <div class="wrap chapter-grid">
+      <header class="chapter-head">
+        <p class="chapter-no"><span>01</span>The problem</p>
+        <h2>Your best tech fixed it last month. <span class="muted">The runbook still says the old way.</span></h2>
+      </header>
+      <div class="chapter-body entries">
+        <article class="entry">
+          <div class="entry-art" data-illos><!-- illos:warehouse --></div>
+          <div class="entry-text">
+            <p class="kicker"><span class="num">01</span>The dashboard.</p>
+            <h3>Counts the jobs. Misses how they got done.</h3>
+            <p>It shows how many jobs closed and how fast. The trick a senior tech used on site never turns into a number.</p>
+            <ul class="tags"><li>Job counts</li><li>SLAs</li><li>Reports</li></ul>
+          </div>
+        </article>
+        <article class="entry">
+          <div class="entry-art" data-illos><!-- illos:seats --></div>
+          <div class="entry-text">
+            <p class="kicker"><span class="num">02</span>Notes per person.</p>
+            <h3>Good fixes stay on one screen.</h3>
+            <p>Each tech keeps their own notes on a phone or laptop. When that person is off shift, so is the fix.</p>
+            <ul class="tags"><li>Notes apps</li><li>Phones</li><li>Group chats</li></ul>
+          </div>
+        </article>
+        <article class="entry">
+          <div class="entry-art" data-illos><!-- illos:snapshot --></div>
+          <div class="entry-text">
+            <p class="kicker"><span class="num">03</span>The search copy.</p>
+            <h3>Searches a copy saved in March.</h3>
+            <p>Search tools answer from a saved copy of the manual. Until someone refreshes it, crews get last quarter's steps.</p>
+            <ul class="tags"><li>PDF manuals</li><li>Shared drives</li><li>Search</li></ul>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 how it works -->
+  <section class="chapter" id="how">
+    <div class="wrap chapter-grid">
+      <header class="chapter-head">
+        <p class="chapter-no"><span>02</span>How pages update</p>
+        <h2>The page changes when the job closes. <span class="muted">Not when someone gets round to it.</span></h2>
+        <p class="chapter-sub">Each runbook page is a plain file. A closed job edits the page it used, the old version stays on file, and the edit carries the job number.</p>
+      </header>
+      <div class="chapter-body">
+        <div class="compare">
+          <table>
+            <caption class="sr-only">When each runbook page last changed, in a saved search copy and in Ferrow</caption>
+            <thead>
+              <tr>
+                <th scope="col">Page</th>
+                <th scope="col"><span class="col-name">Search copy</span><span class="status"><i></i>Behind</span><span class="col-note">Saved once, then left alone.</span></th>
+                <th scope="col" class="is-live"><span class="col-name">Ferrow</span><span class="status ok"><i></i>Live</span><span class="col-note">Edited by the last job that used it.</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row"><span class="file"><i></i>boiler-reset.md</span></th><td>Mar 2026</td><td class="is-live"><span class="tick" data-s="1">1s ago</span></td></tr>
+              <tr><th scope="row"><span class="file"><i></i>router-swap.md</span></th><td>Mar 2026</td><td class="is-live"><span class="tick" data-s="4">4s ago</span></td></tr>
+              <tr><th scope="row"><span class="file"><i></i>refund-steps.md</span></th><td>Mar 2026</td><td class="is-live"><span class="tick" data-s="7">7s ago</span></td></tr>
+              <tr><th scope="row"><span class="file"><i></i>cold-chain-check.md</span></th><td>Mar 2026</td><td class="is-live"><span class="tick" data-s="10">10s ago</span></td></tr>
+              <tr><th scope="row"><span class="file"><i></i>returns-dock.md</span></th><td>Mar 2026</td><td class="is-live"><span class="tick" data-s="13">13s ago</span></td></tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <th scope="row">Pages with the latest fix</th>
+                <td><span class="score">44%</span><span class="meter" aria-hidden="true"><i style="--v:.44"></i></span></td>
+                <td class="is-live"><span class="score">96%</span><span class="meter" aria-hidden="true"><i style="--v:.96"></i></span></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 answers -->
+  <section class="chapter" id="answers">
+    <div class="wrap chapter-grid">
+      <header class="chapter-head">
+        <p class="chapter-no"><span>03</span>Sources</p>
+        <h2>Every step names the job it came from.</h2>
+        <p class="chapter-sub">Tap a source to see the work order, ticket or parts entry behind a step, who closed it and when. Crews follow a step faster when they can check it.</p>
+      </header>
+      <div class="chapter-body">
+        <div class="chat">
+          <div class="chat-bar"><span>Ask Ferrow</span><span aria-hidden="true">/</span><span>Job 4471</span></div>
+          <p class="q">Unit 12 at the Harbor Road site keeps tripping. What do we try first?</p>
+          <div class="a">
+            <span class="avatar" aria-hidden="true">F</span>
+            <div class="a-body">
+              <p>Clear the condensate drain before you touch the board. The north crew moved this step to the top in May, after three repeat visits where the board was fine.</p>
+              <p class="label">Sources</p>
+              <div class="srcs" id="srcs" role="group" aria-label="Sources">
+                <button type="button" aria-pressed="false" data-path="/jobs/wo-4410-harbor-rd.md" data-who="North crew" data-when="12 May">Work order</button>
+                <button type="button" aria-pressed="false" data-path="/tickets/t-2283-repeat-trip.md" data-who="Dispatch" data-when="09 May">Ticket</button>
+                <button type="button" aria-pressed="true" data-path="/notes/drain-before-board.md" data-who="North crew" data-when="14 May">Crew note</button>
+                <button type="button" aria-pressed="false" data-path="/parts/board-returns-may.md" data-who="Stores" data-when="15 May">Parts log</button>
+                <button type="button" aria-pressed="false" data-path="/runbook/unit-trips.md" data-who="Ferrow" data-when="1s ago">Runbook</button>
+              </div>
+              <div class="src-card" id="src-card" aria-live="polite">
+                <p class="src-path">/notes/drain-before-board.md</p>
+                <dl><dt>Closed by</dt><dd>North crew</dd><dt>When</dt><dd>14 May</dd></dl>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 cost -->
+  <section class="chapter" id="cost">
+    <div class="wrap chapter-grid">
+      <header class="chapter-head">
+        <p class="chapter-no"><span>04</span>Setup</p>
+        <h2>Connect your job records once. <span class="muted">Every new team starts from there.</span></h2>
+        <p class="chapter-sub">Ferrow finds your work orders and tickets, strips out duplicates and test jobs, and clears who may read what. Add a second team or a new region and that work is already done.</p>
+      </header>
+      <div class="chapter-body">
+        <div class="frame">
+          <div data-illos><!-- illos:foundation --></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 security -->
+  <section class="band on-dark" id="security">
+    <div class="wrap">
+      <div class="band-head">
+        <div>
+          <p class="chapter-no"><span>05</span>Access</p>
+          <h2>Each person sees <span class="muted">the pages their job needs.</span></h2>
+        </div>
+        <div>
+          <p class="band-sub">A dispatcher can open customer records. Nobody in the field can open HR files. Ferrow checks every request, from a person or a bot, against the scope you set.</p>
+          <a class="btn light" href="#">Read how access works<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18.5 12L5 12"/><path d="M13 18C13 18 19 13.58 19 12C19 10.42 13 6 13 6"/></svg></a>
+        </div>
+      </div>
+      <div class="band-art">
+        <div data-illos><!-- illos:governance --></div>
+      </div>
+      <ul class="points">
+        <li><h3>Scopes per role</h3><p>Set once what techs, agents and drivers may read or edit. Bots get the same rules.</p></li>
+        <li><h3>A log you can export</h3><p>See who opened or changed a page, and which job made the change.</p></li>
+        <li><h3>Undo any edit</h3><p>Old versions stay on file, so a bad change rolls back in one click.</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 06 use cases -->
+  <section class="chapter" id="uses">
+    <div class="wrap chapter-grid">
+      <header class="chapter-head">
+        <p class="chapter-no"><span>06</span>Teams</p>
+        <h2>Where crews put it to work.</h2>
+        <div class="tablist" role="tablist" aria-label="Teams" id="tabs">
+          <button type="button" role="tab" id="tab-field" aria-controls="panel-field" aria-selected="true"><span class="label">Field service</span>Fix it on the first visit</button>
+          <button type="button" role="tab" id="tab-support" aria-controls="panel-support" aria-selected="false" tabindex="-1"><span class="label">Support</span>Answer with the current fix</button>
+          <button type="button" role="tab" id="tab-logistics" aria-controls="panel-logistics" aria-selected="false" tabindex="-1"><span class="label">Logistics</span>Send it to the right depot</button>
+        </div>
+      </header>
+      <div class="chapter-body panels">
+        <article class="panel" role="tabpanel" id="panel-field" aria-labelledby="tab-field">
+          <div class="panel-art" data-illos><!-- illos:fieldservice --></div>
+          <h3>Fix it on the first visit.</h3>
+          <p>A tech finds the real cause on a repeat call and closes the job. Ferrow adds the step to that unit's page, and the next crew sees it on the tablet before they leave the yard.</p>
+        </article>
+        <article class="panel" role="tabpanel" id="panel-support" aria-labelledby="tab-support">
+          <div class="panel-art" data-illos><!-- illos:support --></div>
+          <h3>Answer with the current fix.</h3>
+          <p>Tickets come in one after another. Each agent opens the page for the issue and sees the fix that closed the last ticket like it, with a link to that ticket.</p>
+        </article>
+        <article class="panel" role="tabpanel" id="panel-logistics" aria-labelledby="tab-logistics">
+          <div class="panel-art" data-illos><!-- illos:logistics --></div>
+          <h3>Send it to the right depot.</h3>
+          <p>When one depot finds a faster way to sort returns or load a van, a driver logs it on the run. Ferrow puts it on that depot's page, and every hub that sends parcels there works from the same steps.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- cta -->
+  <section class="cta" id="start">
+    <div class="wrap">
+      <div class="cta-box">
+        <h2>Try it with one crew <span class="muted">for 30 days.</span></h2>
+        <div class="ctas">
+          <a class="btn" href="#">Start a pilot</a>
+          <a class="btn ghost" href="#">Book a demo<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18.5 12L5 12"/><path d="M13 18C13 18 19 13.58 19 12C19 10.42 13 6 13 6"/></svg></a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-grid">
+    <div class="foot-brand">
+      <a class="brand" href="#main"><span class="brand-mark" aria-hidden="true"></span>Ferrow</a>
+      <p>The runbook that keeps up with the field.</p>
+    </div>
+    <nav class="foot-cols" aria-label="Footer">
+      <div><h4>Product</h4><a href="#why">The problem</a><a href="#how">How pages update</a><a href="#answers">Sources</a><a href="#security">Access</a></div>
+      <div><h4>Resources</h4><a href="#">Setup guide</a><a href="#start">Pilot plan</a><a href="#">Field notes</a><a href="#">Status</a></div>
+      <div><h4>Contact</h4><a href="#start">Book a demo</a><a href="#">hello@ferrow.example</a><a href="#">Press</a></div>
+    </nav>
+  </div>
+  <div class="wrap legal">
+    <span>&copy; 2026 Ferrow. A made-up product.</span>
+    <a class="illos-credit" href="https://illos.dev/?utm_source=ferrow-template&amp;utm_medium=example" rel="noopener"><svg viewBox="-26.8 0 400 400" aria-hidden="true"><path fill-rule="evenodd" d="M0,253.81 L0,100 L173.21,0 L346.41,100 L346.41,300 L173.21,400 L76.6,344.23 L76.6,204 L116.6,227.09 L116.6,321.13 L173.21,353.81 L306.41,276.91 L306.41,123.09 L173.21,46.19 L40,123.09 L40,276.91 Z M76.6,140 L116.6,163.09 L116.6,203.09 L76.6,180 Z"/></svg>Animated assets by Illos</a>
+    <span class="legal-links"><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Cookies</a></span>
+  </div>
+</footer>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
